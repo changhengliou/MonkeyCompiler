@@ -2,8 +2,7 @@ package lexer
 
 import (
 	"fmt"
-
-	"github.com/qq52184962/compiler/token"
+	"github.com/qq52184962/MonkeyCompiler/token"
 )
 
 type Lexer struct {
@@ -17,13 +16,13 @@ func New() *Lexer {
 	return &Lexer{currPos: 0, lineNumber: 0, position: 0}
 }
 
-func (lex *Lexer) nextToken() token.Token {
+func (lex *Lexer) NextToken() token.Token {
 	var t token.Token
 	if lex.currPos >= len(lex.input) {
 		t.Type = token.EOF
 	} else {
 		// skip whitespace
-		for lex.input[lex.currPos] == ' ' {
+		for lex.input[lex.currPos] == ' ' || lex.input[lex.currPos] == '\t' {
 			lex.currPos++
 		}
 
@@ -53,8 +52,27 @@ func (lex *Lexer) nextToken() token.Token {
 			t.Type = token.COLON
 			break
 		case '"':
+			lex.currPos++
 			t.Type = token.STRINGLITERAL
 			t.Data = lex.readString()
+			break
+		case '=':
+			if lex.input[lex.currPos+1] == '=' {
+				t.Type = token.EQUAL
+				t.Data = "=="
+				lex.currPos++
+			} else {
+				t.Type = token.ASSIGN
+			}
+			break
+		case '!':
+			if lex.input[lex.currPos+1] == '=' {
+				t.Type = token.NOTEQUAL
+				t.Data = "!="
+				lex.currPos++
+			} else {
+				t.Type = token.NOT
+			}
 			break
 		case '+':
 			t.Type = token.PLUS
@@ -68,12 +86,6 @@ func (lex *Lexer) nextToken() token.Token {
 		case '/':
 			t.Type = token.DIVIDE
 			break
-		case 0:
-			t.Type = token.EOF
-			break
-		case '=':
-			t.Type = token.ASSIGN
-			break
 		case '>':
 			t.Type = token.GREATER
 			break
@@ -86,13 +98,16 @@ func (lex *Lexer) nextToken() token.Token {
 		case ']':
 			t.Type = token.RSQRBRACKET
 			break
+		case 0:
+			t.Type = token.EOF
+			break
 		default:
 			if isDigit(lex.input[lex.currPos]) {
 				t.Type = token.NUMBER
 				t.Data = lex.readNumber()
 			} else {
 				t.Data = lex.readIdentifier()
-				t.Type = token.GetIdentifier(t.Data.(string))
+				t.Type = token.GetKeywordOrIdentifier(t.Data.(string))
 			}
 			break
 		}
@@ -126,12 +141,12 @@ func (lex *Lexer) readInt() int {
 	for ; lex.currPos < len(lex.input) && isDigit(lex.input[lex.currPos]); lex.currPos++ {
 		f = f*10 + int(lex.input[lex.currPos]-'0')
 	}
+	lex.currPos--
 	return f
 }
 
 func (lex *Lexer) readString() string {
 	str := make([]byte, 0)
-	lex.currPos++
 	for ; lex.currPos < len(lex.input) && lex.input[lex.currPos] != '"'; lex.currPos++ {
 		str = append(str, lex.input[lex.currPos])
 	}
@@ -146,15 +161,16 @@ func (lex *Lexer) readIdentifier() string {
 	for ; lex.currPos < len(lex.input) && isIdentifier(lex.input[lex.currPos]); lex.currPos++ {
 		str = append(str, lex.input[lex.currPos])
 	}
+	lex.currPos--
 	return string(str)
 }
 
 func isIdentifier(b byte) bool {
-	return isDigit(b) || isLetter(b)
+	return isDigit(b) || isLetter(b) || b == '_'
 }
 
 func isLetter(b byte) bool {
-	return b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z'
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
 }
 
 func isDigit(b byte) bool {

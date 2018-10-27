@@ -39,21 +39,25 @@ const (
 	COMMA       = ","
 	SEMICOLON   = ";"
 	COLON       = ":"
-	ASSIGN      = "="
-	GREATER     = ">"
-	SMALLER     = "<"
 	LSQRBRACKET = "["
 	RSQRBRACKET = "]"
 
 	// operator
+	ASSIGN   = "="
+	NOT      = "!"
 	PLUS     = "+"
 	MINUS    = "-"
 	MULTIPLY = "*"
 	DIVIDE   = "/"
+	GREATER  = ">"
+	SMALLER  = "<"
+
+	EQUAL    = "=="
+	NOTEQUAL = "!="
 )
 
 var keywords = map[string]string{
-	"fn":     FUNC,
+	"func":     FUNC,
 	"let":    LET,
 	"true":   TRUE,
 	"false":  FALSE,
@@ -63,9 +67,9 @@ var keywords = map[string]string{
 	"for":    FOR,
 }
 
-func GetIdentifier(str string) string {
+func GetKeywordOrIdentifier(str string) string {
 	if s, ok := keywords[str]; ok {
 		return s
 	}
-	return ILLEGAL
+	return IDENTIFIER
 }
