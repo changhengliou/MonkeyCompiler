@@ -30,11 +30,51 @@ let bar = 1 + (2 + 3) * 4 + add(2, 3)
 let foobar = func(x) { x + 3; }
 ```
 
+### Parsing let statement
 ```
 let <identifier> = <expression>;
 ```
 
-## Parsing let statement
+### Parsing return statement
+```
+return <expression>;
+``` 
+
+### Parsing expression
+
+**Example of expression type**
+```$xslt
+-1
+!true
+-5 - 3
+2 + 3 * 4 - 5
+5 * (5 + 5)
+add(2,3)
+add(2, add(3, add(4, 5)))
+foo * bar + foo
+add(2, foo) + bar - 6
+fn() {return 3}()
+x = if (2 > 3) return 4
+x
+```
+**Prefix, infix & postfix operator**
+```$xslt
+--3   // prefix
+3++   // postfix
+2 + 3 // infix
+```
+
+**Prefix operator**
+```$xslt
+-5
+!foo
+6 + -3
+<prefix op><expression>
+```
+**Infix operator**
+```$xslt
+<expression><infix op><expression>
+```
 **Expression produces value, Statement doesn't.**
 ```
 let x = 3;
@@ -43,71 +83,36 @@ let x = 3;
   <Identifier> = <Expression>
 ```
 
+## Simple recursive descent parsing
+> pseudo-code for number `[0-9]` and  operator `+ - * /` only
+```$xslt
+3 + 2 * 2 * 1 * 6 - 5
 ```
-function parseProgram() {
-  program = new ASTRoot()
-  advanceToken()
-
-  for (currentToken != EOF) {
-    statement = null
-
-    if (currentToken() == LET) {
-      statement = parseLetStatement()
-    } else if (currentToken() == RETURN) {
-      statement = parseReturnStatement()
-    } else if (currentToken() == IF) {
-      statement = parseIfStatement()
+```$xslt
+const parseNumber = (str) => number;
+const parseProductAndDivide = function() {
+    let num1 = parseNumber()
+    while (currPtr == '*' || currPtr == '/') {
+        const num2 = parseNumber()
+        if (currPtr == '*') {
+            num1 *= num2
+        } else {
+            num1 /= num2
+        }
     }
-    if (statement != null) {
-      program.Statements.push(statement)
-    } 
-    advanceToken()
-  }
+    return num1
+}
+const parsePlusAndMinus = function() {
+    let num1 = parseProductAndDivide()
+    
+    while (currPtr == '+') {
+        const num2 = parseNumber()
+        num1 += num2
+    }   
+    return num1 
 }
 
-function parseLetStatement() {
-  advanceToken()
-  identifier = parseIdentifier()
-
-  advanceToken()
-
-  if (currentToken() != EQUAL) {
-    throw new Error("Missing = sign")
-  }
-  advanceToken()
-  value = parseExpression()
-  variableStatement = new variableStatementASTNode()
-  variableStatement.identifier = identifier
-  variableStatement.value = value
-  return variableStatement
+const evaluate = () => {
+    return parsePlusAndMinus()
 }
-
-function parseIdentifier() {
-  identifier = new IdentifierASTNode()
-  identifier.token = currentToken()
-  return identifier
-}
-
-function parseExpression() {
-  if (currentToken() == INTEGER) {
-    if (nextToken() == PLUS) {
-      return parseOperatorExpression()
-    } else if (nextToken() == SEMICOLON) {
-      return parseIntegerLiteral()
-    }
-  } else if (currentToken() == LEFT) {
-    return parseGroupedExpression()
-  }
-}
-
-function parseOperatorExpression() {
-  operatorExpression = new OperatorExpression()
-
-  operatorExpression.left = parseIntegerLiteral()
-  operatorExpression.operator = currentToken()
-  operatorExpression.right = parseExpression()
-
-  return operatorExpression()
-}
-
 ```

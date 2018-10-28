@@ -16,6 +16,18 @@ func New() *Lexer {
 	return &Lexer{currPos: 0, lineNumber: 0, position: 0}
 }
 
+func (lex *Lexer) PeekToken() token.Token {
+	currPos := lex.currPos
+	lineNumber := lex.lineNumber
+	position := lex.position
+	tok := lex.NextToken()
+
+	lex.currPos = currPos
+	lex.lineNumber = lineNumber
+	lex.position = position
+	return tok
+}
+
 func (lex *Lexer) NextToken() token.Token {
 	var t token.Token
 	if lex.currPos >= len(lex.input) {
@@ -87,10 +99,10 @@ func (lex *Lexer) NextToken() token.Token {
 			t.Type = token.DIVIDE
 			break
 		case '>':
-			t.Type = token.GREATER
+			t.Type = token.GT
 			break
 		case '<':
-			t.Type = token.SMALLER
+			t.Type = token.LT
 			break
 		case '[':
 			t.Type = token.LSQRBRACKET

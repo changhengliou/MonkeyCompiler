@@ -49,8 +49,8 @@ const (
 	MINUS    = "-"
 	MULTIPLY = "*"
 	DIVIDE   = "/"
-	GREATER  = ">"
-	SMALLER  = "<"
+	GT  = ">"
+	LT  = "<"
 
 	EQUAL    = "=="
 	NOTEQUAL = "!="
